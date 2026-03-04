@@ -1,0 +1,21 @@
+# Mathematical Framework for LLM Emotional Individuality Analysis
+# Python Dependencies
+#
+# Tested with:
+# - Python 3.12.11
+
+# Core Data Processing
+pandas==2.2.2
+numpy==1.26.4
+
+# Statistical Analysis
+scipy==1.11.4
+scikit-learn==1.4.2
+statsmodels==0.14.5
+
+# Visualization
+matplotlib==3.8.4
+seaborn==0.13.2
+
+# Utilities
+tqdm==4.67.1

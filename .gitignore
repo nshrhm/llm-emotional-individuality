@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OS / editor
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Generated outputs (reproducible)
+results/
+
+# Never redistribute the full dataset with free-text justifications
+data_all.csv
+
+# Local scratch
+temp/
+tmp/
+*.log
+*.tmp

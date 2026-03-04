@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software or dataset, please cite the associated paper (DOI TBD)."
+title: "Mathematical Framework for Characterizing Emotional Individuality in Large Language Models"
+type: software
+authors:
+  - family-names: "Shirahama"
+    given-names: "Naruki"
+  - family-names: "Yoshimoto"
+    given-names: "Yuma"
+  - family-names: "Nakaya"
+    given-names: "Naofumi"
+  - family-names: "Watanabe"
+    given-names: "Satoshi"
+repository-code: "https://github.com/nshrhm/llm-emotional-individuality"
+license: "MIT"
+preferred-citation:
+  type: article
+  title: "Mathematical Framework for Characterizing Emotional Individuality in Large Language Models: Temperature Control, Fuzzy Entropy, and Persona-Based Diversity Analysis"
+  authors:
+    - family-names: "Shirahama"
+      given-names: "Naruki"
+    - family-names: "Yoshimoto"
+      given-names: "Yuma"
+    - family-names: "Nakaya"
+      given-names: "Naofumi"
+    - family-names: "Watanabe"
+      given-names: "Satoshi"
+  doi: "TBD"
+  year: 2025
+
