@@ -148,6 +148,38 @@ class TemperatureAnalyzer:
         self.results['temperature_correlation'] = df_temp_corr
         return df_temp_corr
 
+    def calculate_temperature_variance_profiles(self) -> pd.DataFrame:
+        """Calculate pooled emotion-score variance by model and temperature."""
+        results = []
+
+        for (developer, model), group in self.valid_df.groupby(['developer', 'model']):
+            for temp in sorted(group['temperature'].unique()):
+                temp_data = group[group['temperature'] == temp]
+                if len(temp_data) <= 1:
+                    continue
+
+                all_values = temp_data[EMOTION_COLUMNS].to_numpy(dtype=float).flatten()
+                all_values = all_values[~np.isnan(all_values)]
+                if len(all_values) <= 1:
+                    continue
+
+                results.append({
+                    'developer': developer,
+                    'model': model,
+                    'temperature': float(temp),
+                    'pooled_variance': float(np.var(all_values, ddof=1)),
+                    'n_values': int(len(all_values)),
+                })
+
+        df_profiles = pd.DataFrame(results)
+        if len(df_profiles) > 0:
+            df_profiles = df_profiles.sort_values(
+                ['developer', 'model', 'temperature']
+            ).reset_index(drop=True)
+
+        self.results['temperature_variance_profiles'] = df_profiles
+        return df_profiles
+
     def classify_reliability_controllability(
         self,
         reliability_df: pd.DataFrame = None,
@@ -262,6 +294,9 @@ class TemperatureAnalyzer:
 
         print("  - Calculating temperature-variance correlations...")
         self.calculate_temperature_correlation()
+
+        print("  - Calculating model-temperature variance profiles...")
+        self.calculate_temperature_variance_profiles()
 
         print("  - Classifying reliability-controllability matrix...")
         self.classify_reliability_controllability()

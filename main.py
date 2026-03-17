@@ -28,6 +28,7 @@ from src.fuzzy_analysis import FuzzyAnalyzer
 from src.persona_analysis import PersonaAnalyzer
 from src.clustering_analysis import ClusteringAnalyzer
 from src.correlation_analysis import CorrelationAnalyzer
+from src.revision_support import build_revision_support_exports
 from src.visualization import Visualizer
 from src.utils import export_to_json, export_to_csv
 
@@ -37,7 +38,7 @@ def run_complete_analysis(skip_visualization=False, data_path: str | None = None
 
     Args:
         skip_visualization: If True, skip visualization generation
-        data_path: Optional path to input CSV (default: data_all.csv)
+        data_path: Optional path to input CSV (default: data_public.csv)
 
     Returns:
         Dictionary with all results
@@ -109,6 +110,12 @@ def run_complete_analysis(skip_visualization=False, data_path: str | None = None
         for genre, stats in corr_summary['interest_sadness_by_genre'].items():
             print(f"      {genre}: r={stats['r']:.3f}")
 
+    revision_support = build_revision_support_exports(
+        temp_results,
+        fuzzy_results,
+        persona_results,
+    )
+
     # Compile all results
     all_results = {
         'metadata': {
@@ -121,7 +128,8 @@ def run_complete_analysis(skip_visualization=False, data_path: str | None = None
         'fuzzy': fuzzy_results,
         'persona': persona_results,
         'clustering': clustering_results,
-        'correlation': corr_results
+        'correlation': corr_results,
+        'revision_support': revision_support,
     }
 
     # Export summary results
@@ -139,6 +147,8 @@ def run_complete_analysis(skip_visualization=False, data_path: str | None = None
 
     try:
         export_to_json(summary_data, 'analysis_summary.json', JSON_OUTPUT)
+        export_to_json({'metadata': all_results['metadata']},
+                      'analysis_metadata.json', JSON_OUTPUT)
     except Exception as e:
         print(f"  Warning: Could not export full JSON summary: {e}")
         # Export metadata-only fallbacks (keep analysis_summary.json valid for tooling)
@@ -159,6 +169,10 @@ def run_complete_analysis(skip_visualization=False, data_path: str | None = None
     if 'vendor_temperature_response' in temp_results:
         export_to_csv(temp_results['vendor_temperature_response'],
                       'vendor_temperature_response.csv', CSV_OUTPUT)
+
+    if 'temperature_variance_profiles' in temp_results:
+        export_to_csv(temp_results['temperature_variance_profiles'],
+                      'temperature_variance_profiles.csv', CSV_OUTPUT)
 
     if 'model_entropy_profiles' in fuzzy_results:
         export_to_csv(fuzzy_results['model_entropy_profiles'],
@@ -236,6 +250,18 @@ def run_complete_analysis(skip_visualization=False, data_path: str | None = None
         export_to_csv(corr_results['text_correlation_pairs'],
                       'text_correlation_pairs.csv', CSV_OUTPUT)
 
+    revision_support_exports = {
+        'quadrant_threshold_sensitivity': 'quadrant_threshold_sensitivity.csv',
+        'quadrant_threshold_reassignments': 'quadrant_threshold_reassignments.csv',
+        'temperature_variance_profiles_representative': 'temperature_variance_profiles_representative.csv',
+        'entropy_interpretation_anchors': 'entropy_interpretation_anchors.csv',
+        'entropy_reliability_robustness': 'entropy_reliability_robustness.csv',
+        'pca_loadings_pc1_pc3': 'pca_loadings_pc1_pc3.csv',
+    }
+    for key, filename in revision_support_exports.items():
+        if key in revision_support:
+            export_to_csv(revision_support[key], filename, CSV_OUTPUT)
+
     # Export pooled temperature-entropy correlation for high-controllability models
     if ('temperature_correlation' in temp_results and
             'model_temperature_entropy_profiles' in fuzzy_results):
@@ -296,7 +322,7 @@ def run_section(section_number: str, data_path: str | None = None):
 
     Args:
         section_number: Section number (e.g., '3.1', '3.2')
-        data_path: Optional path to input CSV (default: data_all.csv)
+        data_path: Optional path to input CSV (default: data_public.csv)
     """
     print(f"\nRunning Section {section_number} only...")
 
@@ -359,7 +385,7 @@ def main():
         '--data',
         type=str,
         default=None,
-        help='Path to input CSV (default: data_all.csv)'
+        help='Path to input CSV (default: data_public.csv)'
     )
 
     args = parser.parse_args()

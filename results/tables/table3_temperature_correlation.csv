@@ -1,0 +1,16 @@
+Vendor,Model,"r(T,σ²)","|r(T,σ²)|"
+OpenAI,gpt-4o-mini,-0.982,0.982
+Google,gemini-2.0-flash,0.967,0.967
+xAI,grok-3-mini-latest,0.907,0.907
+Google,gemma-3-12b-it,0.876,0.876
+xAI,grok-2-latest,0.863,0.863
+Meta,Llama-4-Maverick-17B,-0.84,0.84
+Google,gemma-3-4b-it,-0.769,0.769
+xAI,grok-3-latest,0.718,0.718
+DeepSeek,DeepSeek-V3-0324,-0.706,0.706
+Meta,Llama-3.3-70B-Instruct-Turbo,0.701,0.701
+DeepSeek,DeepSeek-R1,-0.698,0.698
+OpenAI,gpt-4o,-0.686,0.686
+Anthropic,claude-3-5-sonnet-20241022,-0.668,0.668
+Google,gemini-2.0-flash-lite,0.621,0.621
+Google,gemma-3-27b-it,0.607,0.607

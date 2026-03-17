@@ -114,7 +114,7 @@ FUZZY_PARAMS = {
 }
 
 # Temperature settings for analysis (used for documentation and defaults).
-# The analysis code primarily uses the temperatures present in `data_all.csv`.
+# The analysis code primarily uses the temperatures present in the input CSV.
 TEMPERATURE_LEVELS = [0.1, 0.4, 0.7, 0.9]
 
 # Reliability-Controllability matrix thresholds

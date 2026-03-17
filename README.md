@@ -1,62 +1,90 @@
 # Mathematical Framework for Characterizing Emotional Individuality in Large Language Models
 
-This repository contains the analysis code and a **numeric-only** dataset (`data_public.csv`) supporting our MDPI submission:
+This repository is the **public reproducibility package** for the paper:
 
 **"Mathematical Framework for Characterizing Emotional Individuality in Large Language Models: Temperature Control, Fuzzy Entropy, and Persona-Based Diversity Analysis"**
 
-**Paper link / DOI**: TBD (will be added after publication).
+It is intentionally scoped to **analysis-level reproducibility**. The repository contains the analysis code, the numeric-only public dataset, and the generated reviewer-facing outputs cited by the revised paper.
 
-## What is included
+## Included
 
-- **Reproducible analysis code** (`src/`, `main.py`, `verify_results.py`)
-- **Numeric-only dataset** (`data_public.csv`): scores + metadata only
+- `data_public.csv`: numeric-only dataset (metadata + 0-100 emotion scores)
+- `src/`, `main.py`, `verify_results.py`: analysis and verification code
+- `results/`: curated generated CSV, JSON, figure, and table outputs
+- `QUICKSTART.md`, `OUTPUTS.md`, `REPRODUCIBILITY_NOTES.md`: public reproducibility docs
 
-### What is NOT included
+## Not Included
 
-- Manuscript sources (e.g., LaTeX / PDF) are not distributed here.
-- The full dataset that contains **LLM-generated free-text justifications** (e.g., `Q1reason`--`Q4reason`) is not redistributed in this repository. Some providers' terms may restrict redistribution of generated text; the analyses reported in the paper do not rely on these free-text fields.
+- Manuscript sources, PDFs, rebuttal files, or other review materials
+- The full dataset with LLM-generated free-text justifications (`Q1reason`--`Q4reason`)
+- The verbatim provider-specific prompt template used during the original collection window
 
-## Repository structure
+The public package therefore supports regeneration and verification of the reported **numeric results and figures**, but does **not** claim literal prompt replay.
 
-```
+## Repository Layout
+
+```text
 llm-emotional-individuality/
-├── data_public.csv                 # Numeric-only dataset (scores + metadata)
-├── src/                            # Analysis modules
-├── main.py                         # Main pipeline
-├── verify_results.py               # Checks key aggregates vs paper baselines
-├── requirements.txt                # Python dependencies
-├── LICENSE                         # Code license (MIT)
-└── LICENSE-DATA.md                 # Data license (CC BY 4.0)
+├── data_public.csv
+├── src/
+├── main.py
+├── verify_results.py
+├── QUICKSTART.md
+├── OUTPUTS.md
+├── REPRODUCIBILITY_NOTES.md
+├── results/
+│   ├── csv/
+│   ├── json/
+│   ├── figures/
+│   └── tables/
+├── requirements.txt
+├── LICENSE
+└── LICENSE-DATA.md
 ```
 
-## Installation
-
-- Python 3.10+
+## Quick Reproduction
 
 ```bash
 git clone https://github.com/nshrhm/llm-emotional-individuality.git
 cd llm-emotional-individuality
 pip install -r requirements.txt
-```
-
-## Reproduce the results
-
-```bash
-python main.py
 python verify_results.py
+python main.py
 ```
 
-By default, the analysis reads `data_public.csv`. Outputs are generated under `results/` (not committed).
+By default, both commands use `data_public.csv`.
 
-## Data
+## Public Dataset Boundary
 
 `data_public.csv` contains:
 
-- Metadata: `timestamp`, `text` (IDs `t1`--`t3`), `developer`, `model`, `persona`, `temperature`, `trial`
-- Scores: `Q1value` (Interest), `Q2value` (Surprise), `Q3value` (Sadness), `Q4value` (Anger)
+- Metadata: `timestamp`, `text`, `developer`, `model`, `persona`, `temperature`, `trial`
+- Scores: `Q1value`, `Q2value`, `Q3value`, `Q4value`
 
-## Licensing
+The analysis code tolerates missing justification columns and does not require unpublished free-text fields.
 
-- Code: MIT License (see `LICENSE`)
-- Data: CC BY 4.0 (see `LICENSE-DATA.md`)
+## Revision-Support Outputs
 
+The revised paper added a small set of reviewer-facing support artifacts that are now generated directly by the public repo:
+
+- `results/csv/quadrant_threshold_sensitivity.csv`
+- `results/csv/quadrant_threshold_reassignments.csv`
+- `results/csv/temperature_variance_profiles_representative.csv`
+- `results/csv/entropy_interpretation_anchors.csv`
+- `results/csv/entropy_reliability_robustness.csv`
+- `results/csv/pca_loadings_pc1_pc3.csv`
+- `results/figures/figure2b_temperature_variance_profiles_representative.png`
+- `results/figures/figure2b_temperature_variance_profiles_representative.pdf`
+
+These support the revised appendix analyses on threshold sensitivity, entropy interpretation, entropy-reliability robustness, PCA loadings, and representative temperature-variance behavior.
+
+## Documentation
+
+- `QUICKSTART.md`: exact commands for reviewers
+- `OUTPUTS.md`: output inventory and purpose
+- `REPRODUCIBILITY_NOTES.md`: scope, limits, and data boundary
+
+## Licenses
+
+- Code: MIT (`LICENSE`)
+- Data: CC BY 4.0 (`LICENSE-DATA.md`)

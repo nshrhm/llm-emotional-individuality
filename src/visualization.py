@@ -118,15 +118,78 @@ class Visualizer:
         ax.grid(True, alpha=0.3)
         ax.set_xlim(-0.05, 1.05)
 
-        # Add theoretical explanation text
+        # The revised paper treats this as an empirical profile, not a universal law.
         ax.text(0.02, 0.98,
-               'Higher temperature → Greater diversity → Higher fuzzy entropy',
+               'Representative empirical profiles; entropy need not vary monotonically with temperature.',
                transform=ax.transAxes,
                fontsize=9,
                verticalalignment='top',
                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.3))
 
         self.save_figure(fig, 'figure2_temperature_entropy_relationship')
+        plt.close(fig)
+
+    def plot_temperature_variance_profiles_representative(
+        self,
+        representative_profiles_df: pd.DataFrame,
+        representatives: list[dict[str, object]],
+    ):
+        """Figure 2b: Representative temperature-variance profiles."""
+        if representative_profiles_df.empty or not representatives:
+            return
+
+        label_map = {
+            "negative": "Strong negative",
+            "positive": "Strong positive",
+            "near_flat": "Near-flat",
+        }
+        order = ["negative", "positive", "near_flat"]
+        meta_by_type = {item["profile_type"]: item for item in representatives}
+
+        fig, axes = plt.subplots(1, 3, figsize=(15, 4.5), sharey=True)
+
+        for ax, profile_type in zip(axes, order):
+            meta = meta_by_type.get(profile_type)
+            if meta is None:
+                ax.axis("off")
+                continue
+
+            profile_df = representative_profiles_df[
+                (representative_profiles_df["developer"] == meta["developer"])
+                & (representative_profiles_df["model"] == meta["model"])
+            ].sort_values("temperature")
+
+            vendor = meta["developer"]
+            color = VENDOR_COLORS.get(vendor, "#333333")
+            ax.plot(
+                profile_df["temperature"],
+                profile_df["pooled_variance"],
+                marker="o",
+                linewidth=2,
+                markersize=7,
+                color=color,
+            )
+            ax.set_title(
+                f"{label_map[profile_type]}\n{meta['model']}",
+                fontsize=11,
+                fontweight="bold",
+            )
+            ax.set_xlabel("Temperature", fontsize=10)
+            ax.grid(True, alpha=0.3)
+            ax.set_xlim(-0.05, 1.05)
+            ax.text(
+                0.03,
+                0.95,
+                f"{vendor}\nr={meta['r_T_sigma2']:.3f}",
+                transform=ax.transAxes,
+                fontsize=9,
+                verticalalignment="top",
+                bbox=dict(boxstyle="round", facecolor="white", alpha=0.7),
+            )
+
+        axes[0].set_ylabel("Pooled variance", fontsize=10)
+        plt.tight_layout()
+        self.save_figure(fig, "figure2b_temperature_variance_profiles_representative")
         plt.close(fig)
 
     def plot_reliability_controllability_matrix(self, classification_df: pd.DataFrame):
@@ -252,7 +315,7 @@ class Visualizer:
         
         representative_models = []
         for vendor in entropy_df['developer'].unique():
-            vendor_models = entropy_df[entropy_df['developer'] == vendor]
+            vendor_models = entropy_df[entropy_df['developer'] == vendor].copy()
             
             # Check if there's a preferred model for this vendor
             if vendor in preferred_models:
@@ -555,6 +618,16 @@ class Visualizer:
                 self.plot_temperature_entropy_relationship(
                     fuzzy_results['model_temperature_entropy_profiles'],
                     temp_results['temperature_correlation']
+                )
+
+        if 'revision_support' in self.results:
+            revision_support = self.results['revision_support']
+            if ('temperature_variance_profiles_representative' in revision_support and
+                    'temperature_variance_representatives' in revision_support):
+                print("  Appendix support: Representative temperature-variance profiles")
+                self.plot_temperature_variance_profiles_representative(
+                    revision_support['temperature_variance_profiles_representative'],
+                    revision_support['temperature_variance_representatives'],
                 )
 
         # Fuzzy analysis (Section 3.2)

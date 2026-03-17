@@ -1,0 +1,5 @@
+emotion,persona_1,persona_2,n_persona_1,n_persona_2,u_statistic,p_value,alternative,method
+Interest,p3,p4,989,1035,588477.0,4.0321432328910415e-09,two-sided,asymptotic
+Surprise,p3,p4,989,1035,595890.5,1.152608444334899e-10,two-sided,asymptotic
+Sadness,p3,p4,989,1035,578661.0,2.3334433040743196e-07,two-sided,asymptotic
+Anger,p3,p4,989,1035,550869.5,0.002824503536274683,two-sided,asymptotic

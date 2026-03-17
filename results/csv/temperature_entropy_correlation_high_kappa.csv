@@ -1,0 +1,2 @@
+kappa_threshold,n_models,n_points,r,ci_low_95,ci_high_95,p_value,ci_method
+0.7,10,40,-0.027238535812486094,-0.33590302537471795,0.28670894343282577,0.8674961669188729,Fisher z

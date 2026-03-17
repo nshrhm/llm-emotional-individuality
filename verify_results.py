@@ -28,7 +28,7 @@ class ResultVerifier:
 
         Args:
             summary_file: Path to analysis summary JSON
-            data_path: Path to input CSV (default: data_all.csv)
+            data_path: Path to input CSV (default: data_public.csv)
         """
         self.summary_file = summary_file
         self.data_path = Path(data_path)
@@ -304,7 +304,7 @@ def main():
         "--data",
         type=str,
         default=str(DATA_PATH),
-        help="Path to input CSV (default: data_all.csv)",
+        help="Path to input CSV (default: data_public.csv)",
     )
     args = parser.parse_args()
 

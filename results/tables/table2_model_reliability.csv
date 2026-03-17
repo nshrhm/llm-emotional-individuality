@@ -1,0 +1,21 @@
+Vendor,Model,Overall MDR,Q1 MDR,Q2 MDR,Q3 MDR,Q4 MDR
+Meta,Llama-4-Scout-17B,35.8,35.8,35.8,35.8,35.8
+Alibaba,Qwen3-235B-A22B-FP8,33.3,17.5,17.5,19.2,33.3
+Google,gemini-2.5-pro-preview-03-25,17.5,17.5,17.5,17.5,17.5
+Google,gemma-3-1b-it,16.7,16.7,16.7,16.7,16.7
+Google,gemini-2.0-pro-exp,14.8,14.8,14.8,14.8,14.8
+Google,gemini-2.5-flash-preview-04-17,9.2,9.2,9.2,9.2,9.2
+Alibaba,Qwen2.5-VL-7B-Instruct,9.2,0.0,0.0,9.2,0.8
+Google,gemini-2.0-flash-thinking-exp,6.7,6.7,6.7,6.7,6.7
+Google,gemini-2.0-flash,0.8,0.8,0.8,0.8,0.8
+OpenAI,o4-mini,0.8,0.8,0.8,0.8,0.8
+OpenAI,o3-mini,0.0,0.0,0.0,0.0,0.0
+OpenAI,o3,0.0,0.0,0.0,0.0,0.0
+OpenAI,o1-mini,0.0,0.0,0.0,0.0,0.0
+OpenAI,gpt-4.1,0.0,0.0,0.0,0.0,0.0
+xAI,grok-2-latest,0.0,0.0,0.0,0.0,0.0
+xAI,grok-3-fast-latest,0.0,0.0,0.0,0.0,0.0
+OpenAI,gpt-4o-mini,0.0,0.0,0.0,0.0,0.0
+xAI,grok-3-latest,0.0,0.0,0.0,0.0,0.0
+OpenAI,gpt-4o,0.0,0.0,0.0,0.0,0.0
+xAI,grok-3-mini-fast-latest,0.0,0.0,0.0,0.0,0.0

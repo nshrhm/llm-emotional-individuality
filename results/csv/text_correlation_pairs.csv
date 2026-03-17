@@ -1,0 +1,13 @@
+text,genre,title,emotion_1,emotion_2,r,p_value,n
+t1,Allegorical,Kaichu-dokei (The Pocket Watch),Interest,Sadness,-0.19486513449570037,3.79714725334251e-13,1365
+t1,Allegorical,Kaichu-dokei (The Pocket Watch),Interest,Anger,-0.07493968025031802,0.00560436148042106,1365
+t1,Allegorical,Kaichu-dokei (The Pocket Watch),Surprise,Sadness,0.5678742349155517,2.252258166470153e-117,1365
+t1,Allegorical,Kaichu-dokei (The Pocket Watch),Surprise,Anger,0.33351404254096473,8.098806085843251e-37,1365
+t2,Narrative,Okane to Pisutoru (Money and Pistol),Interest,Sadness,-0.7018763731162924,3.996343649859184e-205,1379
+t2,Narrative,Okane to Pisutoru (Money and Pistol),Interest,Anger,-0.5646316650910004,6.104268203225592e-117,1379
+t2,Narrative,Okane to Pisutoru (Money and Pistol),Surprise,Sadness,-0.012557909440922528,0.6412641329123817,1379
+t2,Narrative,Okane to Pisutoru (Money and Pistol),Surprise,Anger,-0.14590156117093528,5.2605416312272103e-08,1379
+t3,Poetic,Boroboro na Dachou (The Ragged Ostrich),Interest,Sadness,-0.6770557792528429,4.0063490681716913e-178,1323
+t3,Poetic,Boroboro na Dachou (The Ragged Ostrich),Interest,Anger,-0.5140537914331977,4.020920453829945e-90,1323
+t3,Poetic,Boroboro na Dachou (The Ragged Ostrich),Surprise,Sadness,0.1248620577541712,5.2345723556386015e-06,1323
+t3,Poetic,Boroboro na Dachou (The Ragged Ostrich),Surprise,Anger,0.20736212677889954,2.5720191687566015e-14,1323

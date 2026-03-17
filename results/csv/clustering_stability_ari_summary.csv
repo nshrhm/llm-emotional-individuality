@@ -1,0 +1,2 @@
+n_bootstrap,n_clusters,n_models,mean_ari,ci_low_95,ci_high_95,ci_method,bootstrap_strategy,cell_definition
+1000,5,32,0.81841487212475,0.4078876993048089,1.0,percentile,within_cell_resample_fixed_n,"(developer, model, text, persona)"

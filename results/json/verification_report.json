@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-03-04T11:48:51.910381",
+  "total_checks": 7,
+  "passed": 7,
+  "warnings": 0,
+  "errors": 0,
+  "passed_checks": [
+    "\u2713 Submission coverage: 4227/4320 = 0.978 (matches)",
+    "\u2713 Valid-score rate (valid/collected): 0.962 (matches 0.962)",
+    "\u2713 Valid data points: 4067 (matches)",
+    "\u2713 Temperature correlation range: [-0.982, 0.967] (matches)",
+    "\u2713 Model-level mean entropy range: [0.404, 0.661] (matches)",
+    "\u2713 Persona-temperature synergy (Pearson): r=0.614, p=0.3862 (matches)",
+    "\u2713 Consistency range: [0.548, 0.780] (matches)"
+  ],
+  "warning_checks": [],
+  "error_checks": [],
+  "overall_status": "PASSED"
+}

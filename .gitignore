@@ -18,14 +18,21 @@ env/
 .vscode/
 .idea/
 
-# Generated outputs (reproducible)
-results/
-
 # Never redistribute the full dataset with free-text justifications
 data_all.csv
+
+# Never publish manuscript / review workspace materials
+paper/
+review/
+docs/
+reports/
+cover_letter/
 
 # Local scratch
 temp/
 tmp/
 *.log
 *.tmp
+
+# Scratch outputs
+results/csv/_write_test.txt

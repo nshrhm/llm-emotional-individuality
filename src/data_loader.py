@@ -1,7 +1,7 @@
 """
 Data loading and validation module.
 
-Loads data_all.csv and performs validation checks to ensure data integrity.
+Loads the configured input dataset and performs validation checks.
 """
 
 import pandas as pd
@@ -28,7 +28,7 @@ class DataLoader:
         """Initialize data loader.
 
         Args:
-            data_path: Path to data_all.csv file
+            data_path: Path to the input CSV file
         """
         self.data_path = Path(data_path)
         self.df = None
