@@ -26,6 +26,12 @@ from .utils import calculate_correlation, calculate_missing_data_rate
 class TemperatureAnalyzer:
     """Analyze temperature effects on LLM responses."""
 
+    REPRESENTATIVE_VARIANCE_MODELS = (
+        ("OpenAI", "gpt-4o-mini"),
+        ("Google", "gemini-2.0-flash"),
+        ("Google", "gemma-3-1b-it"),
+    )
+
     def __init__(self, raw_df: pd.DataFrame, valid_df: pd.DataFrame = None):
         """Initialize analyzer.
 
@@ -281,6 +287,71 @@ class TemperatureAnalyzer:
         self.results['vendor_temperature_response'] = vendor_stats
         return vendor_stats
 
+    def calculate_representative_temperature_variance_profiles(
+        self,
+        temp_corr_df: pd.DataFrame = None
+    ) -> pd.DataFrame:
+        """Build reproducible temperature-variance profiles for Figure 2b.
+
+        Args:
+            temp_corr_df: Temperature correlation DataFrame
+
+        Returns:
+            Long-form DataFrame with one row per representative model/temperature
+        """
+        if temp_corr_df is None:
+            temp_corr_df = self.results.get('temperature_correlation')
+
+        correlation_lookup = {}
+        if temp_corr_df is not None and len(temp_corr_df) > 0:
+            correlation_lookup = (
+                temp_corr_df.set_index(['developer', 'model'])[
+                    ['r_T_sigma2', 'controllability']
+                ].to_dict('index')
+            )
+
+        results = []
+
+        for developer, model in self.REPRESENTATIVE_VARIANCE_MODELS:
+            model_group = self.valid_df[
+                (self.valid_df['developer'] == developer) &
+                (self.valid_df['model'] == model)
+            ]
+
+            if len(model_group) == 0:
+                continue
+
+            corr_stats = correlation_lookup.get((developer, model))
+            if corr_stats is None:
+                continue
+
+            for temp in sorted(model_group['temperature'].unique()):
+                temp_data = model_group[model_group['temperature'] == temp]
+                all_values = temp_data[EMOTION_COLUMNS].to_numpy(dtype=float).flatten()
+                all_values = all_values[~np.isnan(all_values)]
+
+                if len(all_values) < 2:
+                    continue
+
+                results.append({
+                    'developer': developer,
+                    'model': model,
+                    'temperature': float(temp),
+                    'pooled_variance': float(np.var(all_values, ddof=1)),
+                    'n_values': int(len(all_values)),
+                    'r_T_sigma2': float(corr_stats['r_T_sigma2']),
+                    'controllability': float(corr_stats['controllability']),
+                })
+
+        df_profiles = pd.DataFrame(results)
+        if len(df_profiles) > 0:
+            df_profiles = df_profiles.sort_values(
+                ['developer', 'model', 'temperature']
+            ).reset_index(drop=True)
+
+        self.results['temperature_variance_profiles_representative'] = df_profiles
+        return df_profiles
+
     def run_all_analyses(self) -> Dict:
         """Run all temperature-related analyses.
 
@@ -303,6 +374,9 @@ class TemperatureAnalyzer:
 
         print("  - Calculating vendor-level temperature response...")
         self.calculate_vendor_temperature_response()
+
+        print("  - Building representative temperature-variance profiles...")
+        self.calculate_representative_temperature_variance_profiles()
 
         print("✓ Temperature analysis complete")
 

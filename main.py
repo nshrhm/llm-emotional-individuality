@@ -174,6 +174,10 @@ def run_complete_analysis(skip_visualization=False, data_path: str | None = None
         export_to_csv(temp_results['temperature_variance_profiles'],
                       'temperature_variance_profiles.csv', CSV_OUTPUT)
 
+    if 'temperature_variance_profiles_representative' in temp_results:
+        export_to_csv(temp_results['temperature_variance_profiles_representative'],
+                      'temperature_variance_profiles_representative.csv', CSV_OUTPUT)
+
     if 'model_entropy_profiles' in fuzzy_results:
         export_to_csv(fuzzy_results['model_entropy_profiles'],
                      'model_entropy_profiles.csv', CSV_OUTPUT)

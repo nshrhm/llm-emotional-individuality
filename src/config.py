@@ -137,6 +137,25 @@ TSNE_PARAMS = {
 FIGURE_DPI = 300
 FIGURE_SIZE = (10, 8)
 FIGURE_FORMAT = ["png", "pdf"]
+FIGURE_FONT_FAMILY = "serif"
+FIGURE_FONT_SERIF = [
+    "TeX Gyre Pagella",
+    "Palatino Linotype",
+    "Book Antiqua",
+    "Times New Roman",
+    "Nimbus Roman",
+    "DejaVu Serif",
+]
+FIGURE_BASE_FONT_SIZE = 12
+FIGURE_AXIS_LABEL_SIZE = FIGURE_BASE_FONT_SIZE
+FIGURE_TICK_LABEL_SIZE = FIGURE_BASE_FONT_SIZE
+FIGURE_LEGEND_FONT_SIZE = FIGURE_BASE_FONT_SIZE
+FIGURE_LEGEND_TITLE_SIZE = FIGURE_BASE_FONT_SIZE
+FIGURE_TITLE_SIZE = FIGURE_BASE_FONT_SIZE
+FIGURE_ANNOTATION_SIZE = FIGURE_BASE_FONT_SIZE
+FIGURE_PDF_FONT_TYPE = 42
+FIGURE_PS_FONT_TYPE = 42
+FIGURE_MATHTEXT_FONTSET = "stix"
 
 # Expected data dimensions for the current dataset.
 # - EXPECTED_DATA_POINTS is the designed maximum (texts × personas × trials × models)

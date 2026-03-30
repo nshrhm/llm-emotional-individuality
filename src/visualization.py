@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
+import textwrap
 from typing import Dict, List, Tuple, Any
 
 from .config import (
@@ -17,18 +18,64 @@ from .config import (
     VENDOR_COLORS,
     FIGURE_DPI,
     FIGURE_SIZE,
+    FIGURE_FORMAT,
+    FIGURE_FONT_FAMILY,
+    FIGURE_FONT_SERIF,
+    FIGURE_BASE_FONT_SIZE,
+    FIGURE_AXIS_LABEL_SIZE,
+    FIGURE_TICK_LABEL_SIZE,
+    FIGURE_LEGEND_FONT_SIZE,
+    FIGURE_LEGEND_TITLE_SIZE,
+    FIGURE_TITLE_SIZE,
+    FIGURE_ANNOTATION_SIZE,
+    FIGURE_PDF_FONT_TYPE,
+    FIGURE_PS_FONT_TYPE,
+    FIGURE_MATHTEXT_FONTSET,
     EMOTIONS,
     TEXTS,
     PERSONAS
 )
 
 
-# Set publication-quality style
-sns.set_style("whitegrid")
-plt.rcParams['figure.dpi'] = FIGURE_DPI
-plt.rcParams['savefig.dpi'] = FIGURE_DPI
-plt.rcParams['font.size'] = 10
-plt.rcParams['font.family'] = 'sans-serif'
+def apply_publication_style():
+    """Set a manuscript-aligned global plotting style."""
+    sns.set_theme(style="whitegrid")
+    plt.rcParams.update({
+        'figure.dpi': FIGURE_DPI,
+        'savefig.dpi': FIGURE_DPI,
+        'font.family': FIGURE_FONT_FAMILY,
+        'font.serif': FIGURE_FONT_SERIF,
+        'font.size': FIGURE_BASE_FONT_SIZE,
+        'axes.titlesize': FIGURE_TITLE_SIZE,
+        'axes.labelsize': FIGURE_AXIS_LABEL_SIZE,
+        'xtick.labelsize': FIGURE_TICK_LABEL_SIZE,
+        'ytick.labelsize': FIGURE_TICK_LABEL_SIZE,
+        'legend.fontsize': FIGURE_LEGEND_FONT_SIZE,
+        'legend.title_fontsize': FIGURE_LEGEND_TITLE_SIZE,
+        'pdf.fonttype': FIGURE_PDF_FONT_TYPE,
+        'ps.fonttype': FIGURE_PS_FONT_TYPE,
+        'mathtext.fontset': FIGURE_MATHTEXT_FONTSET,
+    })
+
+
+apply_publication_style()
+
+
+def wrap_model_label(model_name: str, vendor_name: str, width: int = 14) -> str:
+    """Wrap model labels to preserve readable font sizes in the paper."""
+    normalized = model_name.replace('-', '- ').replace('_', '_ ')
+    wrapped = textwrap.fill(normalized, width=width, break_long_words=False)
+    wrapped = wrapped.replace('- ', '-').replace('_ ', '_')
+    return f"{wrapped}\n({vendor_name})"
+
+
+def classify_temperature_variance_profile(correlation: float) -> str:
+    """Map correlation values to the Figure 2b narrative labels."""
+    if correlation <= -0.7:
+        return 'strong negative'
+    if correlation >= 0.7:
+        return 'strong positive'
+    return 'near-flat'
 
 
 class Visualizer:
@@ -51,7 +98,7 @@ class Visualizer:
             fig: Matplotlib figure
             filename: Base filename (without extension)
         """
-        for fmt in ['png', 'pdf']:
+        for fmt in FIGURE_FORMAT:
             filepath = self.figures_output / f"{filename}.{fmt}"
             fig.savefig(filepath, format=fmt, bbox_inches='tight', dpi=FIGURE_DPI)
             print(f"  Saved: {filepath}")
@@ -91,7 +138,7 @@ class Visualizer:
             'gemma-3-1b-it': ('Google', 'Low controllability (|r|=0.04)')
         }
 
-        fig, ax = plt.subplots(figsize=(10, 7))
+        fig, ax = plt.subplots(figsize=(7.75, 6.5))
 
         # Plot each representative model
         for model_name, (vendor, label) in representative_models.items():
@@ -112,84 +159,159 @@ class Visualizer:
                     alpha=0.8
                 )
 
-        ax.set_xlabel('Temperature', fontsize=12)
-        ax.set_ylabel('Mean Fuzzy Entropy', fontsize=12)
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fontsize=10, ncol=1)
+        ax.set_xlabel('Temperature')
+        ax.set_ylabel('Mean Fuzzy Entropy')
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.20), ncol=1, frameon=True)
         ax.grid(True, alpha=0.3)
         ax.set_xlim(-0.05, 1.05)
 
-        # The revised paper treats this as an empirical profile, not a universal law.
+        # Add theoretical explanation text
         ax.text(0.02, 0.98,
-               'Representative empirical profiles; entropy need not vary monotonically with temperature.',
+               'Higher temperature → Greater diversity → Higher fuzzy entropy',
                transform=ax.transAxes,
-               fontsize=9,
                verticalalignment='top',
                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.3))
 
+        fig.subplots_adjust(bottom=0.26)
         self.save_figure(fig, 'figure2_temperature_entropy_relationship')
         plt.close(fig)
 
-    def plot_temperature_variance_profiles_representative(
+    def plot_representative_temperature_variance_profiles(
         self,
-        representative_profiles_df: pd.DataFrame,
-        representatives: list[dict[str, object]],
+        profile_df: pd.DataFrame
     ):
         """Figure 2b: Representative temperature-variance profiles."""
-        if representative_profiles_df.empty or not representatives:
+        if len(profile_df) == 0:
             return
 
-        label_map = {
-            "negative": "Strong negative",
-            "positive": "Strong positive",
-            "near_flat": "Near-flat",
+        representative_order = [
+            ('OpenAI', 'gpt-4o-mini'),
+            ('Google', 'gemini-2.0-flash'),
+            ('Google', 'gemma-3-1b-it'),
+        ]
+        profile_colors = {
+            ('OpenAI', 'gpt-4o-mini'): '#1b9e77',
+            ('Google', 'gemini-2.0-flash'): '#3b82f6',
+            ('Google', 'gemma-3-1b-it'): '#d97706',
         }
-        order = ["negative", "positive", "near_flat"]
-        meta_by_type = {item["profile_type"]: item for item in representatives}
 
-        fig, axes = plt.subplots(1, 3, figsize=(15, 4.5), sharey=True)
+        fig, axes = plt.subplots(1, 3, figsize=(8.25, 4.45), sharey=True)
 
-        for ax, profile_type in zip(axes, order):
-            meta = meta_by_type.get(profile_type)
-            if meta is None:
-                ax.axis("off")
+        y_min = profile_df['pooled_variance'].min()
+        y_max = profile_df['pooled_variance'].max()
+        y_pad = (y_max - y_min) * 0.16 if y_max > y_min else 40
+
+        for ax, key in zip(axes, representative_order):
+            developer, model = key
+            panel_df = profile_df[
+                (profile_df['developer'] == developer) &
+                (profile_df['model'] == model)
+            ].sort_values('temperature')
+
+            if len(panel_df) == 0:
+                ax.set_visible(False)
                 continue
 
-            profile_df = representative_profiles_df[
-                (representative_profiles_df["developer"] == meta["developer"])
-                & (representative_profiles_df["model"] == meta["model"])
-            ].sort_values("temperature")
+            temperatures = panel_df['temperature'].to_numpy(dtype=float)
+            variances = panel_df['pooled_variance'].to_numpy(dtype=float)
+            counts = panel_df['n_values'].astype(int).tolist()
+            correlation = float(panel_df['r_T_sigma2'].iloc[0])
+            profile_label = classify_temperature_variance_profile(correlation)
+            color = profile_colors[key]
 
-            vendor = meta["developer"]
-            color = VENDOR_COLORS.get(vendor, "#333333")
             ax.plot(
-                profile_df["temperature"],
-                profile_df["pooled_variance"],
-                marker="o",
-                linewidth=2,
-                markersize=7,
+                temperatures,
+                variances,
                 color=color,
-            )
-            ax.set_title(
-                f"{label_map[profile_type]}\n{meta['model']}",
-                fontsize=11,
-                fontweight="bold",
-            )
-            ax.set_xlabel("Temperature", fontsize=10)
-            ax.grid(True, alpha=0.3)
-            ax.set_xlim(-0.05, 1.05)
-            ax.text(
-                0.03,
-                0.95,
-                f"{vendor}\nr={meta['r_T_sigma2']:.3f}",
-                transform=ax.transAxes,
-                fontsize=9,
-                verticalalignment="top",
-                bbox=dict(boxstyle="round", facecolor="white", alpha=0.7),
+                marker='o',
+                linewidth=2.5,
+                markersize=7,
+                markeredgecolor='white',
+                markeredgewidth=0.8,
             )
 
-        axes[0].set_ylabel("Pooled variance", fontsize=10)
-        plt.tight_layout()
-        self.save_figure(fig, "figure2b_temperature_variance_profiles_representative")
+            if len(temperatures) >= 2:
+                coeffs = np.polyfit(temperatures, variances, 1)
+                trend_x = np.linspace(temperatures.min(), temperatures.max(), 100)
+                trend_y = coeffs[0] * trend_x + coeffs[1]
+                ax.plot(
+                    trend_x,
+                    trend_y,
+                    color=color,
+                    linestyle='--',
+                    linewidth=1.6,
+                    alpha=0.85,
+                )
+
+            label_offset = (y_max - y_min) * 0.035 if y_max > y_min else 10
+            subtitle_y = 0.97
+            if key == ('OpenAI', 'gpt-4o-mini'):
+                label_offset *= 0.8
+                subtitle_y = 520
+            for temp, variance in zip(temperatures, variances):
+                ax.text(
+                    temp,
+                    variance + label_offset,
+                    f'{variance:.0f}',
+                    ha='center',
+                    va='bottom',
+                )
+
+            ax.set_title(model, fontweight='bold', pad=18)
+            subtitle_kwargs = {
+                'ha': 'center',
+                'fontsize': FIGURE_TICK_LABEL_SIZE - 1,
+                'bbox': dict(
+                    boxstyle='round,pad=0.22',
+                    facecolor='white',
+                    edgecolor='none',
+                    alpha=0.82,
+                ),
+            }
+            if key == ('OpenAI', 'gpt-4o-mini'):
+                ax.text(
+                    0.55,
+                    subtitle_y,
+                    f'{developer}\n$r = {correlation:.3f}$ ({profile_label})',
+                    transform=ax.transData,
+                    va='center',
+                    bbox=dict(
+                        boxstyle='round,pad=0.22',
+                        facecolor='white',
+                        edgecolor='none',
+                        alpha=0.90,
+                    ),
+                    ha='center',
+                    fontsize=FIGURE_TICK_LABEL_SIZE - 1,
+                )
+            else:
+                ax.text(
+                    0.5,
+                    subtitle_y,
+                    f'{developer}\n$r = {correlation:.3f}$ ({profile_label})',
+                    transform=ax.transAxes,
+                    va='top',
+                    **subtitle_kwargs,
+                )
+            ax.text(
+                0.5,
+                -0.28,
+                'n per temperature: ' + ', '.join(str(n) for n in counts),
+                transform=ax.transAxes,
+                ha='center',
+                va='top',
+                fontsize=FIGURE_TICK_LABEL_SIZE - 1,
+            )
+            ax.set_xlabel('Assigned temperature', fontweight='bold')
+            ax.set_xticks([0.1, 0.4, 0.7, 0.9])
+            ax.set_xlim(0.05, 0.95)
+            ax.set_ylim(y_min - y_pad * 0.25, y_max + y_pad)
+            ax.grid(True, alpha=0.3)
+
+        axes[0].set_ylabel('Pooled score variance', fontweight='bold')
+
+        fig.subplots_adjust(left=0.09, right=0.985, bottom=0.29, top=0.83, wspace=0.14)
+        self.save_figure(fig, 'figure2b_temperature_variance_profiles_representative')
         plt.close(fig)
 
     def plot_reliability_controllability_matrix(self, classification_df: pd.DataFrame):
@@ -198,7 +320,7 @@ class Visualizer:
         Args:
             classification_df: DataFrame with reliability and controllability
         """
-        fig, ax = plt.subplots(figsize=(10, 7))
+        fig, ax = plt.subplots(figsize=(7.75, 6.6))
 
         # Plot points by vendor
         for vendor, color in VENDOR_COLORS.items():
@@ -220,13 +342,13 @@ class Visualizer:
         ax.axvline(x=0.5, color='gray', linestyle='--', linewidth=1, alpha=0.5)
 
         # Labels for quadrants
-        ax.text(0.75, 0.98, 'Ideal', fontsize=12, ha='center', style='italic', alpha=0.6)
-        ax.text(0.25, 0.98, 'Stable', fontsize=12, ha='center', style='italic', alpha=0.6)
-        ax.text(0.75, 0.92, 'Controllable', fontsize=12, ha='center', style='italic', alpha=0.6)
-        ax.text(0.25, 0.92, 'Avoid', fontsize=12, ha='center', style='italic', alpha=0.6)
+        ax.text(0.75, 0.98, 'Ideal', ha='center', style='italic', alpha=0.6)
+        ax.text(0.25, 0.98, 'Stable', ha='center', style='italic', alpha=0.6)
+        ax.text(0.75, 0.92, 'Controllable', ha='center', style='italic', alpha=0.6)
+        ax.text(0.25, 0.92, 'Avoid', ha='center', style='italic', alpha=0.6)
 
-        ax.set_xlabel('Controllability (κ = |r_T,σ²|)', fontsize=12, fontweight='bold')
-        ax.set_ylabel('Reliability (ρ = 1 - MDR)', fontsize=12, fontweight='bold')
+        ax.set_xlabel('Controllability (κ = |r_T,σ²|)', fontweight='bold')
+        ax.set_ylabel('Reliability (ρ = 1 - MDR)', fontweight='bold')
         
         # Legend positioned below the plot
         from matplotlib.patches import Patch
@@ -235,15 +357,14 @@ class Visualizer:
             for vendor, color in VENDOR_COLORS.items()
             if vendor in classification_df['developer'].unique()
         ]
-        ax.legend(handles=legend_elements, loc='upper center', bbox_to_anchor=(0.5, -0.12),
-                 fontsize=10, ncol=7, title='Vendor', title_fontsize=11,
-                 frameon=True, shadow=True)
+        ax.legend(handles=legend_elements, loc='upper center', bbox_to_anchor=(0.5, -0.16),
+                 ncol=4, title='Vendor', frameon=True, shadow=True)
         
         ax.set_xlim(-0.05, 1.05)
         ax.set_ylim(0.60, 1.005)
         ax.grid(True, alpha=0.3)
 
-        plt.tight_layout()
+        fig.subplots_adjust(bottom=0.28)
         self.save_figure(fig, 'figure1_reliability_controllability_matrix')
         plt.close(fig)
 
@@ -253,7 +374,7 @@ class Visualizer:
         Args:
             vendor_profiles: Dictionary mapping emotion -> vendor distribution DataFrame
         """
-        fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+        fig, axes = plt.subplots(2, 2, figsize=(8.4, 10.0))
         axes = axes.flatten()
 
         emotions = ['Interest', 'Surprise', 'Sadness', 'Anger']
@@ -277,18 +398,18 @@ class Visualizer:
                 ax.bar(x, medium_pct, width, bottom=low_pct, label='Medium', color='#95a5a6', alpha=0.8)
                 ax.bar(x, high_pct, width, bottom=low_pct+medium_pct, label='High', color='#e74c3c', alpha=0.8)
 
-                ax.set_xlabel('Vendor', fontsize=10)
-                ax.set_ylabel('Percentage (%)', fontsize=10)
-                ax.set_title(f'{emotion}', fontsize=11, fontweight='bold')
+                ax.set_xlabel('Vendor')
+                ax.set_ylabel('Percentage (%)')
+                ax.set_title(f'{emotion}', fontweight='bold')
                 ax.set_xticks(x)
-                ax.set_xticklabels(vendors, rotation=45, ha='right', fontsize=9)
+                ax.set_xticklabels(vendors, rotation=55, ha='right')
                 ax.set_ylim(0, 100)
                 ax.grid(axis='y', alpha=0.3)
+        handles, labels = axes[0].get_legend_handles_labels()
+        if handles:
+            fig.legend(handles, labels, loc='lower center', ncol=2, frameon=True)
 
-                if idx == 0:
-                    ax.legend(loc='upper right', fontsize=9)
-
-        plt.tight_layout()
+        fig.subplots_adjust(bottom=0.17, hspace=0.42, wspace=0.18)
         self.save_figure(fig, 'figure3_vendor_fuzzy_distributions')
         plt.close(fig)
 
@@ -377,7 +498,7 @@ class Visualizer:
         model_order = representative_df.sort_values('mean_entropy')['model'].tolist()
         
         # Create figure with better size for fewer models
-        fig, ax = plt.subplots(figsize=(12, 8))
+        fig, ax = plt.subplots(figsize=(8.3, 8.8))
         
         # Create violin plot with vendor colors
         positions = np.arange(len(model_order))
@@ -429,16 +550,16 @@ class Visualizer:
                 )
         
         # Customize plot
-        ax.set_ylabel('Fuzzy Entropy $H_f$', fontsize=12, fontweight='bold')
+        ax.set_ylabel('Fuzzy Entropy $H_f$', fontweight='bold')
         ax.set_xticks(positions)
         
         # Create labels with vendor name
         labels = []
         for model in model_order:
             developer = plot_df[plot_df['model'] == model]['developer'].iloc[0]
-            labels.append(f'{model}\n({developer})')
+            labels.append(wrap_model_label(model, developer, width=15))
         
-        ax.set_xticklabels(labels, rotation=45, ha='right', fontsize=10)
+        ax.set_xticklabels(labels, rotation=0, ha='center')
         ax.set_ylim(-0.05, 1.05)
         ax.grid(axis='y', alpha=0.3)
         
@@ -449,11 +570,10 @@ class Visualizer:
             for vendor, color in VENDOR_COLORS.items()
             if vendor in plot_df['developer'].unique()
         ]
-        ax.legend(handles=legend_elements, loc='upper center', bbox_to_anchor=(0.5, -0.25),
-                 fontsize=10, ncol=7, title='Vendor', title_fontsize=11,
-                 frameon=True, shadow=True)
-        
-        plt.tight_layout()
+        ax.legend(handles=legend_elements, loc='upper center', bbox_to_anchor=(0.5, -0.26),
+                 ncol=2, title='Vendor', frameon=True, shadow=True)
+
+        fig.subplots_adjust(bottom=0.34)
         self.save_figure(fig, 'figure4_entropy_distribution_violin')
         plt.close(fig)
 
@@ -466,7 +586,7 @@ class Visualizer:
             cluster_labels: Cluster assignments
             model_labels: Model identifiers
         """
-        fig, ax = plt.subplots(figsize=(12, 10))
+        fig, ax = plt.subplots(figsize=(8.2, 7.8))
 
         # Extract vendors from model labels
         vendors = [label.split('/')[0] for label in model_labels]
@@ -486,11 +606,12 @@ class Visualizer:
                     linewidth=0.5
                 )
 
-        ax.set_xlabel('t-SNE Dimension 1', fontsize=12)
-        ax.set_ylabel('t-SNE Dimension 2', fontsize=12)
-        ax.legend(loc='best', fontsize=10)
+        ax.set_xlabel('t-SNE Dimension 1')
+        ax.set_ylabel('t-SNE Dimension 2')
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.13), ncol=4, frameon=True)
         ax.grid(True, alpha=0.3)
 
+        fig.subplots_adjust(bottom=0.23)
         self.save_figure(fig, 'figure5_tsne_clustering')
         plt.close(fig)
 
@@ -500,9 +621,13 @@ class Visualizer:
         Args:
             correlation_matrices: Dictionary with correlation matrices by text
         """
-        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+        fig = plt.figure(figsize=(8.6, 3.9))
+        grid = fig.add_gridspec(1, 4, width_ratios=[1, 1, 1, 0.09], wspace=0.32)
+        axes = [fig.add_subplot(grid[0, idx]) for idx in range(3)]
+        colorbar_ax = fig.add_subplot(grid[0, 3])
 
         texts = ['t1', 't2', 't3']
+        heatmap_mappable = None
 
         for idx, text_id in enumerate(texts):
             if text_id in correlation_matrices:
@@ -511,7 +636,7 @@ class Visualizer:
                 genre = corr_data['genre']
 
                 ax = axes[idx]
-                sns.heatmap(
+                heatmap = sns.heatmap(
                     matrix,
                     annot=True,
                     fmt='.2f',
@@ -521,11 +646,24 @@ class Visualizer:
                     vmax=1,
                     square=True,
                     ax=ax,
-                    cbar_kws={'label': 'Correlation'}
+                    cbar=False,
+                    annot_kws={'size': FIGURE_ANNOTATION_SIZE}
                 )
-                ax.set_title(f'{genre} (T{idx+1})', fontsize=11, fontweight='bold')
+                ax.set_title(f'{genre} (T{idx+1})', fontweight='bold')
+                if idx > 0:
+                    ax.set_yticklabels([])
+                    ax.tick_params(axis='y', length=0)
+                heatmap_mappable = heatmap.collections[0]
 
-        plt.tight_layout()
+        if heatmap_mappable is not None:
+            colorbar = fig.colorbar(
+                heatmap_mappable,
+                cax=colorbar_ax
+            )
+            colorbar.set_label('Correlation', size=FIGURE_AXIS_LABEL_SIZE, labelpad=10)
+            colorbar.ax.tick_params(labelsize=FIGURE_TICK_LABEL_SIZE, pad=2)
+
+        fig.subplots_adjust(left=0.08, right=0.96, bottom=0.13, top=0.90)
         self.save_figure(fig, 'figure6_correlation_matrices')
         plt.close(fig)
 
@@ -606,6 +744,11 @@ class Visualizer:
                     temp_results['temperature_correlation']
                 )
 
+            if 'temperature_variance_profiles_representative' in temp_results:
+                self.plot_representative_temperature_variance_profiles(
+                    temp_results['temperature_variance_profiles_representative']
+                )
+
         # Figure 2: Temperature-Entropy Relationship (Section 3.1.2)
         # This requires data from both temperature and fuzzy analyses
         if 'fuzzy' in self.results and 'temperature' in self.results:
@@ -618,16 +761,6 @@ class Visualizer:
                 self.plot_temperature_entropy_relationship(
                     fuzzy_results['model_temperature_entropy_profiles'],
                     temp_results['temperature_correlation']
-                )
-
-        if 'revision_support' in self.results:
-            revision_support = self.results['revision_support']
-            if ('temperature_variance_profiles_representative' in revision_support and
-                    'temperature_variance_representatives' in revision_support):
-                print("  Appendix support: Representative temperature-variance profiles")
-                self.plot_temperature_variance_profiles_representative(
-                    revision_support['temperature_variance_profiles_representative'],
-                    revision_support['temperature_variance_representatives'],
                 )
 
         # Fuzzy analysis (Section 3.2)

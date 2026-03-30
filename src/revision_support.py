@@ -257,10 +257,22 @@ def build_revision_support_exports(
         temp_results["model_reliability"],
         temp_results["temperature_correlation"],
     )
-    variance_profiles_df, representatives = build_temperature_variance_profiles_export(
-        temp_results["temperature_correlation"],
-        temp_results["temperature_variance_profiles"],
-    )
+    variance_profiles_df = temp_results.get("temperature_variance_profiles_representative")
+    representatives = []
+    if variance_profiles_df is None or len(variance_profiles_df) == 0:
+        variance_profiles_df, representatives = build_temperature_variance_profiles_export(
+            temp_results["temperature_correlation"],
+            temp_results["temperature_variance_profiles"],
+        )
+    else:
+        representatives = (
+            variance_profiles_df[
+                ["developer", "model", "r_T_sigma2", "controllability"]
+            ]
+            .drop_duplicates()
+            .sort_values(["developer", "model"])
+            .to_dict(orient="records")
+        )
 
     outputs = {
         "quadrant_threshold_sensitivity": sensitivity_df,
